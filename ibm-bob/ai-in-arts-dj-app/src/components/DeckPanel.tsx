@@ -60,7 +60,15 @@ export default function DeckPanel({ deck, label, ensureAudio }: Props) {
       <div className="track-name">{track ? track.name : 'No track loaded'}</div>
 
       <div className="waveform-wrap">
-        <Waveform peaks={track?.peaks ?? null} position={deck.position} onSeek={deck.seek} />
+        <Waveform
+          peaks={track?.peaks ?? null}
+          position={deck.position}
+          onSeek={deck.seek}
+          cuePoint={deck.state.cuePoint}
+          loopIn={deck.state.loopIn}
+          loopOut={deck.state.loopOut}
+          loopActive={deck.state.loopActive}
+        />
       </div>
 
       <div className="transport">
@@ -74,6 +82,52 @@ export default function DeckPanel({ deck, label, ensureAudio }: Props) {
         <span className="time">
           {track ? `${fmt(deck.position * track.duration)} / ${fmt(track.duration)}` : '0:00 / 0:00'}
         </span>
+      </div>
+
+      <div className="cue-loop-row">
+        <button
+          className="btn ghost small"
+          onClick={deck.setCuePoint}
+          disabled={!track}
+          title="Set cue point at current position"
+        >
+          Set Cue
+        </button>
+        <button
+          className="btn ghost small"
+          onClick={deck.jumpToCue}
+          disabled={deck.state.cuePoint === null}
+          title="Jump to cue point"
+        >
+          Cue
+        </button>
+        <button
+          className="btn ghost small"
+          onClick={deck.setLoopIn}
+          disabled={!track}
+          title="Set loop-in at current position"
+        >
+          Loop In
+        </button>
+        <button
+          className="btn ghost small"
+          onClick={() => {
+            deck.setLoopOut();
+            if (deck.state.loopIn !== null && !deck.state.loopActive) deck.toggleLoop();
+          }}
+          disabled={deck.state.loopIn === null}
+          title="Set loop-out and activate loop"
+        >
+          Loop Out
+        </button>
+        <button
+          className={`btn ghost small${deck.state.loopActive ? ' active' : ''}`}
+          onClick={deck.toggleLoop}
+          disabled={deck.state.loopIn === null || deck.state.loopOut === null}
+          title="Toggle loop"
+        >
+          Loop
+        </button>
       </div>
 
       {error && <p className="error">{error}</p>}

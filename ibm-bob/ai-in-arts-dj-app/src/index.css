@@ -108,6 +108,17 @@ code {
   font-weight: 500;
 }
 
+.btn.small {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.btn.active {
+  background: var(--accent);
+  color: #0a0c10;
+  border-color: var(--accent);
+}
+
 .deck {
   flex: 1;
   min-height: 0;
@@ -276,6 +287,14 @@ code {
   align-items: center;
   gap: 1rem;
   margin-top: 0.5rem;
+}
+
+.cue-loop-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
 }
 
 /* Mixer (master + crossfader) — center column of the console */

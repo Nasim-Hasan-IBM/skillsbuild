@@ -17,12 +17,17 @@ interface Props {
   peaks: TrackPeaks | null;
   position: number; // normalized 0..1
   onSeek: (norm: number) => void;
+  // P4 markers
+  cuePoint: number | null;
+  loopIn: number | null;
+  loopOut: number | null;
+  loopActive: boolean;
 }
 
 const CACHE_HEIGHT = 256; // offscreen bitmap height; scaled to the canvas at blit time
 const MIN_WINDOW = 0.02; // closest zoom: 2% of the track visible
 
-export default function Waveform({ peaks, position, onSeek }: Props) {
+export default function Waveform({ peaks, position, onSeek, cuePoint, loopIn, loopOut, loopActive }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cacheRef = useRef<HTMLCanvasElement | null>(null);
   const [windowFrac, setWindowFrac] = useState(1); // fraction of track visible (1 = all)
@@ -112,18 +117,46 @@ export default function Waveform({ peaks, position, onSeek }: Props) {
     const total = cache.width;
     const { start, win } = windowFor(total);
 
+    // Helper: normalized track position → canvas X pixel
+    const normToX = (norm: number) => ((norm * total - start) / win) * cssW;
+
     // Blit just the visible slice, scaled to the canvas.
     ctx.drawImage(cache, start, 0, win, cache.height, 0, 0, cssW, cssH);
 
+    // P4: loop region fill + boundary lines
+    if (loopIn !== null && loopOut !== null) {
+      const lx = normToX(loopIn);
+      const rx = normToX(loopOut);
+      ctx.fillStyle = loopActive ? 'rgba(76,194,255,0.30)' : 'rgba(76,194,255,0.15)';
+      ctx.fillRect(lx, 0, rx - lx, cssH);
+      ctx.strokeStyle = '#4cc2ff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(lx, 0); ctx.lineTo(lx, cssH);
+      ctx.moveTo(rx, 0); ctx.lineTo(rx, cssH);
+      ctx.stroke();
+    }
+
+    // P4: cue marker
+    if (cuePoint !== null) {
+      const cx = normToX(cuePoint);
+      ctx.strokeStyle = '#ffaa33';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx, cssH);
+      ctx.stroke();
+    }
+
     // Playhead at its true position within the visible window.
-    const playX = ((position * total - start) / win) * cssW;
+    const playX = normToX(position);
     ctx.strokeStyle = '#ff6b6b';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(playX, 0);
     ctx.lineTo(playX, cssH);
     ctx.stroke();
-  }, [position, windowFor]);
+  }, [position, windowFor, cuePoint, loopIn, loopOut, loopActive]);
 
   useEffect(() => {
     draw();

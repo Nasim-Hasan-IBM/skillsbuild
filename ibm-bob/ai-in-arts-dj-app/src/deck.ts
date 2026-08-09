@@ -36,6 +36,12 @@ export interface DeckState {
   eqMid: number; // dB, -12..12
   eqHigh: number; // dB, -12..12
   filterCutoff: number; // -1 (LPF down to 100Hz) .. 0 (bypass) .. 1 (HPF up to 10kHz)
+  // P4: loop
+  loopIn: number | null; // normalized loop start (0..1)
+  loopOut: number | null; // normalized loop end (0..1)
+  loopActive: boolean;
+  // P4: cue
+  cuePoint: number | null; // normalized cue position (0..1)
 }
 
 export function initialDeckState(id: string): DeckState {
@@ -51,6 +57,10 @@ export function initialDeckState(id: string): DeckState {
     eqMid: 0,
     eqHigh: 0,
     filterCutoff: 0,
+    loopIn: null,
+    loopOut: null,
+    loopActive: false,
+    cuePoint: null,
   };
 }
 
@@ -125,7 +135,22 @@ export function buildDeckSignal(s: DeckState): DeckSignal | null {
   const seekTrig = el.const({ key: `${s.id}_seek`, value: s.seekGen });
   const base = el.const({ key: `${s.id}_base`, value: s.baseNorm });
 
-  const position = el.add(base, el.accum(inc, seekTrig));
+  let position: NodeRepr_t = el.add(base, el.accum(inc, seekTrig));
+
+  // P4 loop: wrap position into [loopIn, loopOut) using floored modulo so the
+  // sign is always positive. Formula from SPEC §6:
+  //   x - len * floor((x - loopIn) / len)   where len = loopOut - loopIn
+  if (s.loopActive && s.loopIn !== null && s.loopOut !== null) {
+    const loopInC = el.const({ key: `${s.id}_loopIn`, value: s.loopIn });
+    const loopOutC = el.const({ key: `${s.id}_loopOut`, value: s.loopOut });
+    const lenC = el.const({ key: `${s.id}_loopLen`, value: s.loopOut - s.loopIn });
+    position = el.sub(
+      position,
+      el.mul(lenC, el.floor(el.div(el.sub(position, loopInC), lenC))),
+    );
+    // Clamp tightly to [loopIn, loopOut) so any floating-point overshoot is safe.
+    position = el.min(loopOutC, el.max(loopInC, position));
+  }
 
   const leftRaw = el.table({ key: `${s.id}_tblL`, path: pathL }, position);
   const rightRaw = el.table({ key: `${s.id}_tblR`, path: pathR }, position);
