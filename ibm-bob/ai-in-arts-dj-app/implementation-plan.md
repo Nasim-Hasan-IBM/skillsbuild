@@ -42,7 +42,7 @@ Wire up the existing `tempo` field in `DeckState` to actually change playback sp
 - [`DeckControls.tsx`](src/components/DeckControls.tsx) — existing knob layout to follow.
 
 ### Status
-`[ ] pending`
+`[x] complete`
 
 ---
 

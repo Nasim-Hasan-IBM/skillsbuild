@@ -25,9 +25,11 @@ type Action =
   | { type: 'END' }
   | { type: 'SET_VOLUME'; value: number }
   | { type: 'SET_EQ'; band: EqBand; value: number }
-  | { type: 'SET_FILTER'; value: number };
+  | { type: 'SET_FILTER'; value: number }
+  | { type: 'SET_TEMPO'; value: number };
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+const clampTempo = (n: number) => Math.min(2.0, Math.max(0.5, n));
 
 function reducer(s: DeckState, a: Action): DeckState {
   switch (a.type) {
@@ -49,6 +51,8 @@ function reducer(s: DeckState, a: Action): DeckState {
       return { ...s, [a.band]: a.value };
     case 'SET_FILTER':
       return { ...s, filterCutoff: Math.max(-1, Math.min(1, a.value)) };
+    case 'SET_TEMPO':
+      return { ...s, tempo: clampTempo(a.value) };
     default:
       return s;
   }
@@ -64,6 +68,7 @@ export interface UseDeck {
   setVolume: (value: number) => void;
   setEq: (band: EqBand, value: number) => void;
   setFilter: (value: number) => void;
+  setTempo: (value: number) => void;
 }
 
 export function useDeck(id: string, audioReady: boolean): UseDeck {
@@ -127,6 +132,7 @@ export function useDeck(id: string, audioReady: boolean): UseDeck {
   const setVolume = useCallback((value: number) => dispatch({ type: 'SET_VOLUME', value }), []);
   const setEq = useCallback((band: EqBand, value: number) => dispatch({ type: 'SET_EQ', band, value }), []);
   const setFilter = useCallback((value: number) => dispatch({ type: 'SET_FILTER', value }), []);
+  const setTempo = useCallback((value: number) => dispatch({ type: 'SET_TEMPO', value }), []);
 
-  return { state, position, level, load, togglePlay, seek, setVolume, setEq, setFilter };
+  return { state, position, level, load, togglePlay, seek, setVolume, setEq, setFilter, setTempo };
 }

@@ -12,6 +12,12 @@ function filterLabel(v: number): string {
   return v < 0 ? `LP ${Math.round(-v * 100)}` : `HP ${Math.round(v * 100)}`;
 }
 
+function tempoLabel(v: number): string {
+  const pct = Math.round((v - 1) * 100);
+  if (pct === 0) return '0%';
+  return pct > 0 ? `+${pct}%` : `${pct}%`;
+}
+
 export default function DeckControls({ deck }: { deck: UseDeck }) {
   const { state, level } = deck;
 
@@ -29,6 +35,15 @@ export default function DeckControls({ deck }: { deck: UseDeck }) {
         max={1}
         onChange={deck.setFilter}
         format={filterLabel}
+      />
+      <Knob
+        label="TEMPO"
+        value={state.tempo}
+        min={0.5}
+        max={2.0}
+        defaultValue={1.0}
+        onChange={deck.setTempo}
+        format={tempoLabel}
       />
       <Fader value={state.volume} level={level} onChange={deck.setVolume} />
     </div>
