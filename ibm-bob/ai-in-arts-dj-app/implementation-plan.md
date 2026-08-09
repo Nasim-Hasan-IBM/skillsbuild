@@ -74,7 +74,7 @@ The SPEC describes the loop wrap technique precisely (§6):
 - SPEC §6 — exact floored-modulo formula and loop-exit re-base requirement.
 
 ### Status
-`[ ] pending`
+`[x] complete`
 
 ---
 
@@ -101,7 +101,7 @@ Add a single in-mix cue point (`cuePoint: number | null`) to `DeckState`. The cu
 - SPEC §2 — "In-mix cue point only, no headphone bus" scope decision.
 
 ### Status
-`[ ] pending`
+`[x] complete`
 
 ---
 
@@ -132,7 +132,7 @@ Extend `Waveform.tsx` to draw cue and loop markers on the waveform canvas: a ver
 - [`DeckPanel.tsx`](src/components/DeckPanel.tsx:63) — existing `<Waveform>` call site.
 
 ### Status
-`[ ] pending`
+`[x] complete`
 
 ---
 
@@ -161,7 +161,7 @@ Add transport-area buttons in `DeckPanel.tsx` for all four P4 controls: **Set Cu
 - [`index.css`](src/index.css:75-113) — existing `.btn` / `.btn.ghost` variants to follow for the new `.btn.active`.
 
 ### Status
-`[ ] pending`
+`[x] complete`
 
 ---
 
