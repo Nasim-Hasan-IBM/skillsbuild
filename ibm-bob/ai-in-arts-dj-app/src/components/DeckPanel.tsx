@@ -6,10 +6,17 @@ import { useRef, useState } from 'react';
 import type { UseDeck } from '../useDeck';
 import Waveform from './Waveform';
 
+// Demo tracks shipped alongside the app for quick testing without a file picker.
+const DEMO_TRACKS: Record<string, { url: string; name: string }> = {
+  A: { url: '/Music_1.mp3', name: 'Music_1.mp3' },
+  B: { url: '/Music_2.mp3', name: 'Music_2.mp3' },
+};
+
 interface Props {
   deck: UseDeck;
   label: string;
   ensureAudio: () => Promise<void>; // boots the AudioContext on first user gesture
+  deckId: string; // 'A' or 'B' — selects the demo track
 }
 
 function fmt(sec: number): string {
@@ -18,7 +25,7 @@ function fmt(sec: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function DeckPanel({ deck, label, ensureAudio }: Props) {
+export default function DeckPanel({ deck, label, ensureAudio, deckId }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +46,21 @@ export default function DeckPanel({ deck, label, ensureAudio }: Props) {
     }
   };
 
+  const onLoadDemo = async () => {
+    const demo = DEMO_TRACKS[deckId];
+    if (!demo) return;
+    setError(null);
+    setLoading(true);
+    try {
+      await ensureAudio();
+      await deck.loadFromUrl(demo.url, demo.name);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const { track } = deck.state;
 
   return (
@@ -48,6 +70,11 @@ export default function DeckPanel({ deck, label, ensureAudio }: Props) {
         <button className="btn ghost" onClick={() => fileInputRef.current?.click()} disabled={loading}>
           {loading ? 'Loading…' : 'Load track'}
         </button>
+        {DEMO_TRACKS[deckId] && (
+          <button className="btn ghost" onClick={onLoadDemo} disabled={loading} title={`Load ${DEMO_TRACKS[deckId].name} for testing`}>
+            Load demo
+          </button>
+        )}
         <input
           ref={fileInputRef}
           type="file"

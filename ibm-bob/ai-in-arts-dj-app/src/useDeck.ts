@@ -94,6 +94,7 @@ export interface UseDeck {
   position: number; // live normalized playhead 0..1
   level: number; // live meter level 0..1
   load: (file: File) => Promise<void>;
+  loadFromUrl: (url: string, name: string) => Promise<void>;
   togglePlay: () => void;
   seek: (norm: number) => void;
   setVolume: (value: number) => void;
@@ -167,6 +168,20 @@ export function useDeck(id: string, audioReady: boolean): UseDeck {
     [id],
   );
 
+  const loadFromUrl = useCallback(
+    async (url: string, name: string) => {
+      const rt = getRuntime();
+      if (!rt) return;
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], name, { type: blob.type || 'audio/mpeg' });
+      const track = await loadTrackToVFS(rt, id, file);
+      setPosition(0);
+      dispatch({ type: 'LOAD', track });
+    },
+    [id],
+  );
+
   const togglePlay = useCallback(() => {
     dispatch(playingRef.current ? { type: 'PAUSE' } : { type: 'PLAY' });
   }, []);
@@ -223,6 +238,7 @@ export function useDeck(id: string, audioReady: boolean): UseDeck {
     position,
     level,
     load,
+    loadFromUrl,
     togglePlay,
     seek,
     setVolume,

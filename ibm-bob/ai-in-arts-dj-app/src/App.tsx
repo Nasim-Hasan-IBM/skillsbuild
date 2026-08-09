@@ -64,8 +64,8 @@ export default function App() {
       </header>
 
       <div className="decks">
-        <DeckPanel deck={deckA} label="Deck A" ensureAudio={ensureAudio} />
-        <DeckPanel deck={deckB} label="Deck B" ensureAudio={ensureAudio} />
+        <DeckPanel deck={deckA} label="Deck A" ensureAudio={ensureAudio} deckId="A" />
+        <DeckPanel deck={deckB} label="Deck B" ensureAudio={ensureAudio} deckId="B" />
       </div>
 
       <div className="console">
